@@ -1,0 +1,46 @@
+name: Build Doctor AI Live APK
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'zulu'
+        java-version: '17'
+
+    - name: Set up Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.19.0'
+        channel: 'stable'
+
+    - name: Setup Dynamic Flutter Project
+      run: |
+        flutter create clean_app --empty
+        rm clean_app/lib/main.dart
+        cp main.dart clean_app/lib/main.dart
+        cd clean_app
+        flutter pub get
+
+    - name: Build Android Debug APK
+      run: |
+        cd clean_app
+        flutter build apk --debug
+
+    - name: Upload APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: Doctor-AI-App-APK
+        path: clean_app/build/app/outputs/flutter-apk/app-debug.apk
+          
